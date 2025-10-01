@@ -3,14 +3,14 @@
 	"name": "Panchroma",
 	"display_name": "Panchroma",
 	"author": ["kekeee"],
-	"description": "A Balatro mod based off the puzzle game Lingo by Brenton Wildes. Features 15 new Jokers and art by Navelle.",
+	"description": "A Balatro mod based off the puzzle game Lingo by Brenton Wildes. Features 20 new Jokers and art by Navelle.",
 	"prefix": "kls",
 	"main_file": "Panchroma.lua",
-	"priority": 0,
+	"priority": 2059,
 	"badge_colour": "93AFF3",
 	"badge_text_colour": "F3D793",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"dependencies": [
-		"Steamodded (>=1.0.0~BETA-0614a)"
+		"Steamodded (>=1.0.0~BETA-0711a)"
 	]
 }

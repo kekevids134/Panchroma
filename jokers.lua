@@ -1,40 +1,20 @@
-SMODS.Atlas{
-    key = "Jokers",
-    path = "Jokers.png",
-    px = 71,
-    py = 95
-}
 SMODS.Joker{
     key = "white",
     unlocked = true,
-    loc_txt = {
-        name = "White",
-        text = {
-            "{C:green}#1# in #2#{} chance to create a {C:dark_edition}Negative{} {C:tarot,T:c_death}Death{} card",
-            "if played hand contains {C:attention}exactly 5{} cards with the same {C:attention}rank{} and {C:attention}suit{}"
-        }
-    },
-    config = { extra = {odds = 5} },
+    config = { extra = {dollars = 3} },
     loc_vars = function(self, info_queue, card)
-        return { vars = { (G.GAME and G.GAME.probabilities.normal or 1), card.ability.extra.odds} }
+        return { vars = { card.ability.extra.dollars } }
     end,
-    rarity = 3,
+    rarity = 2,
     atlas = "Jokers",
     blueprint_compat = true,
     pos = {x = 0, y = 0},
     cost = 7,
     calculate = function(self, card, context)
-        if context.before and next(context.poker_hands["Flush Five"]) and pseudorandom("white") < G.GAME.probabilities.normal / card.ability.extra.odds then
-            G.E_MANAGER:add_event(Event({
-                func = function()
-                    local cardX = SMODS.add_card{key = "c_death"}
-                    cardX:set_edition("e_negative", true)
-                    cardX:add_to_deck()
-                    card_eval_status_text(context.blueprint_card or card, "extra", nil, nil, nil, { message = "+ Death", colour = G.C.PURPLE})
-                    G.consumeables:emplace(cardX)
-                    return true
-                end
-            }))
+        if context.before and next(context.poker_hands["Flush Five"]) then
+            return {
+                dollars = card.ability.extra.dollars
+            }
         end
     end
 }
@@ -42,14 +22,7 @@ SMODS.Joker{
 SMODS.Joker{
     key = "black",
     unlocked = true,
-    loc_txt = {
-        name = "Black",
-        text = {
-            "{C:clubs}Clubs{} and {C:hearts}Hearts{} count as the same suit,",
-            "{C:diamonds}Diamonds{} and {C:spades}Spades{} count as the same suit"
-        }
-    },
-    rarity = 3,
+    rarity = 2,
     atlas = "Jokers",
     blueprint_compat = false,
     pos = {x = 1, y = 0},
@@ -78,12 +51,6 @@ SMODS.Joker{
     key = "red",
     unlocked = true,
     blueprint_compat = false,
-    loc_txt = {
-        name = "Red",
-        text = {
-            "First discard {C:attention}destroys{} every discarded card"
-        }
-    },
     config = { extra = {odds = 3} },
     loc_vars = function(self, info_queue, card)
         return { vars = { (G.GAME and G.GAME.probabilities.normal or 1), card.ability.extra.odds} }
@@ -108,17 +75,8 @@ SMODS.Joker{
 
 SMODS.Joker {
 	key = "blue",
-	loc_txt = {
-		name = "Blue",
-		text = {
-			"Gains {C:chips}+#2#{} Chips",
-			"for each {C:attention}hand{} remaining",
-            "at end of round",
-			"{C:inactive}(Currently {C:chips}+#1#{C:inactive} Chips)"
-		}
-	},
 	config = { extra = { chips = 0, chip_gain = 7 } },
-	rarity = 3,
+	rarity = 2,
 	atlas = "Jokers",
     blueprint_compat = true,
 	pos = { x = 2, y = 0 },
@@ -137,7 +95,7 @@ SMODS.Joker {
 		if context.end_of_round and not context.blueprint and context.main_eval then
 			card.ability.extra.chips = card.ability.extra.chips + (card.ability.extra.chip_gain * G.GAME.current_round.hands_left)
 			return {
-				message = "Upgraded!",
+				message = localize('k_upgrade_ex'),
 				colour = G.C.CHIPS,
 				card = card
 			}
@@ -147,16 +105,8 @@ SMODS.Joker {
 
 SMODS.Joker {
 	key = "yellow",
-	loc_txt = {
-		name = "Yellow",
-		text = {
-			"Shuffles all Joker cards",
-			"at beginning of round,",
-            "earn {C:money}$#1#{} at end of round"
-		}
-	},
 	config = { extra = { dollars = 6 } },
-	rarity = 3,
+	rarity = 2,
 	atlas = "Jokers",
     blueprint_compat = false,
 	pos = { x = 1, y = 1 },
@@ -206,17 +156,8 @@ SMODS.Joker {
 
 SMODS.Joker {
 	key = "green",
-	loc_txt = {
-		name = "Green",
-		text = {
-			"This Joker gains {C:chips}+#2#{} Chips",
-            "per reroll in the {C:attention}shop{},",
-            "amount {C:attention}resets{} after each {C:attention}Boss Blind{}",
-            "{C:inactive}(Currently {C:chips}+#1#{C:inactive} Chips)"
-		}
-	},
 	config = { extra = { chips = 0, chip_gain = 30 } },
-	rarity = 3,
+	rarity = 2,
 	atlas = "Jokers",
     blueprint_compat = true,
 	pos = { x = 3, y = 1 },
@@ -245,7 +186,7 @@ SMODS.Joker {
             if G.GAME.blind.boss and card.ability.extra.chips > 1 then
                 card.ability.extra.chips = 0
                 return {
-                    message = "Reset",
+                    message = localize('k_reset'),
                     colour = G.C.CHIPS
                 }
             end
@@ -255,50 +196,26 @@ SMODS.Joker {
 
 SMODS.Joker {
 	key = "purple",
-	loc_txt = {
-		name = "Purple",
-		text = {
-			"This Joker gains {X:mult,C:white}X#2#{} Mult",
-            "whenever a Joker is {C:attention}sold{},",
-            "{C:inactive}(Currently {X:mult,C:white}X#1#{C:inactive} Mult)"
-		}
-	},
-	config = { extra = { xmult = 1, xmult_gain = 0.1 } },
+	config = { extra = { xmult = 2 } },
 	rarity = 3,
 	atlas = "Jokers",
     blueprint_compat = true,
 	pos = { x = 4, y = 0 },
 	cost = 7,
 	loc_vars = function(self, info_queue, card)
-		return { vars = { card.ability.extra.xmult, card.ability.extra.xmult_gain } }
+		return { vars = { card.ability.extra.xmult} }
 	end,
 	calculate = function(self, card, context)
-		if context.joker_main then
-			return {
-				mult = card.ability.extra.xmult
-			}
-		end
-
-		if context.selling_card and context.card.ability.set == "Joker" and context.card ~= card and not context.blueprint and context.main_eval then
-			card.ability.extra.xmult = card.ability.extra.xmult + card.ability.extra.xmult_gain
-			return {
-				message = localize { type = "variable", key = "a_xmult", vars = { card.ability.extra.xmult } },
-				colour = G.C.MULT,
-				card = card
-			}
-		end
+        if context.other_joker and context.other_joker.config.center.original_mod == SMODS.Mods["KLS"] then
+            return {
+                xmult = card.ability.extra.xmult
+            }
+        end
 	end
 }
 
 SMODS.Joker {
 	key = "brown",
-	loc_txt = {
-		name = "Brown",
-		text = {
-			"{C:attention}-1{} Ante to win,",
-            "but shop prices are {C:attention}#1#%{} higher"
-		}
-	},
 	config = { extra = { percent = 40 } },
 	rarity = 3,
 	atlas = "Jokers",
@@ -336,15 +253,6 @@ SMODS.Joker {
 
 SMODS.Joker {
 	key = "hui1", -- I can't decide which spelling of græy to use, so I just resorted to the Chinese word for it (灰)
-	loc_txt = {
-		name = "Grey", -- Will be changed when more localisation files are added
-		text = {
-            "{C:attention}Stone Cards{} give an extra {C:chips}+#1#{} Chips and {C:mult}+#2#{} Mult",
-            "{X:mult,C:white}X#3#{} Mult per {C:attention}Stone Card{} if hand consists of {C:attention}5 Stone Cards{},",
-            "increases by {X:mult,C:white}X#4#{} for every level of {C:attention}High Card{}",
-            "{C:inactive}(Currently {}{X:mult,C:white}X#5#{}{C:inactive} Mult){}"
-		}
-	},
 	config = { extra = { chips = 50, mult = 10, xmult = 1.07, xmult_gain = 0.03 } },
 	rarity = 3,
 	atlas = "Jokers",
@@ -382,15 +290,8 @@ SMODS.Joker {
 
 SMODS.Joker {
 	key = "orange",
-	loc_txt = {
-		name = "Orange",
-		text = {
-            "{C:attention}Face Cards{} and {C:attention}Aces{}",
-            "give {C:money}$#1#{} when scored"
-		}
-	},
 	config = { extra = { dollars = 1 } },
-	rarity = 3,
+	rarity = 2,
 	atlas = "Jokers",
     blueprint_compat = true,
 	pos = { x = 0, y = 1 },
@@ -409,15 +310,8 @@ SMODS.Joker {
 
 SMODS.Joker {
 	key = "magenta",
-	loc_txt = {
-		name = "Magenta",
-		text = {
-            "{X:mult,C:white}X#1#{} Mult for all {C:attention}#2#s{} scored,",
-            "rank changes every round"
-		}
-	},
 	config = { extra = { xmult = 1.5 } },
-	rarity = 3,
+	rarity = 2,
 	atlas = "Jokers",
     blueprint_compat = true,
 	pos = { x = 3, y = 2 },
@@ -431,6 +325,12 @@ SMODS.Joker {
             context.other_card:get_id() == G.GAME.current_round.kls_mg_card.id then
             return {
                 xmult = card.ability.extra.xmult
+            }
+        end
+        if context.end_of_round and context.game_over == false and context.main_eval and not context.blueprint then
+            return {
+                message = localize('k_reset'),
+                colour = G.C.MULT
             }
         end
     end
@@ -453,15 +353,8 @@ end
 
 SMODS.Joker {
 	key = "lime",
-	loc_txt = {
-		name = "Lime",
-		text = {
-            "{X:mult,C:white}X#1#{} Mult for all {V:1}#2#{} scored,",
-            "rank changes every round"
-		}
-	},
 	config = { extra = { xmult = 1.2 } },
-	rarity = 3,
+	rarity = 2,
 	atlas = "Jokers",
     blueprint_compat = true,
 	pos = { x = 2, y = 2 },
@@ -475,6 +368,12 @@ SMODS.Joker {
             context.other_card:is_suit(G.GAME.current_round.kls_lm_card.suit) then
             return {
                 xmult = card.ability.extra.xmult
+            }
+        end
+        if context.end_of_round and context.game_over == false and context.main_eval and not context.blueprint then
+            return {
+                message = localize('k_reset'),
+                colour = G.C.MULT
             }
         end
     end
@@ -496,15 +395,8 @@ end
 
 SMODS.Joker {
 	key = "mint",
-	loc_txt = {
-		name = "Mint",
-		text = {
-            "{X:mult,C:white}X#2#{} Mult for every time",
-            "{C:attention}poker hand{} has been played this run"
-		}
-	},
 	config = { extra = { xmult = 1, xmult_gain = 0.05 } },
-	rarity = 3,
+	rarity = 2,
 	atlas = "Jokers",
     blueprint_compat = true,
 	pos = { x = 4, y = 2 },
@@ -523,24 +415,15 @@ SMODS.Joker {
 
 SMODS.Joker {
 	key = "lavender",
-	loc_txt = {
-		name = "Lavender",
-		text = {
-            "Gives {C:money}${} at end of round equal to",
-            "the {C:attention}average sell value{} of the Jokers",
-            "to the {C:attention}left{} and {C:attention}right{} of this Joker,",
-            "rounded up to the nearest integer"
-		}
-	},
 	config = { extra = { dollars = 0 } },
-	rarity = 3,
+	rarity = 1,
 	atlas = "Jokers",
     blueprint_compat = true,
 	pos = { x = 1, y = 2 },
 	cost = 7,
 	loc_vars = function(self, info_queue, card)
         local jleft, jright
-        if card.area and card.area == G.jokers then
+        if card.area and card.area == G.jokers then -- note: do not delete the doubling. the grouping is (card.area) and (card.area == G.jokers).
             for i = 1, #G.jokers.cards do
                 if G.jokers.cards[i] == card then
                     jleft = G.jokers.cards[i - 1]
@@ -560,17 +443,8 @@ SMODS.Joker {
 
 SMODS.Joker {
 	key = "cream",
-	loc_txt = {
-		name = "Cream",
-		text = {
-            "Each card gets {C:attention}bonus{} Chips when scored",
-            "equal to {C:attention}half the total rank{} of all cards scored,",
-            "rounded up to the nearest integer",
-            "{C:inactive}(Jack = 11, Queen = 12, King = 13, Ace = 14){}"
-		}
-	},
 	config = { extra = {  } },
-	rarity = 3,
+	rarity = 2,
 	atlas = "Jokers",
     blueprint_compat = true,
 	pos = { x = 0, y = 2 },
@@ -586,16 +460,276 @@ SMODS.Joker {
                     totalid = totalid + scored_card:get_id()
                 end
             end
-            context.other_card.ability.perma_bonus = (context.other_card.ability.perma_bonus or 0) + math.ceil(totalid / 2)
+            context.other_card.ability.perma_bonus = (context.other_card.ability.perma_bonus or 0) + math.ceil(totalid / 5)
             return {
-                message = "Upgrade!",
+                message = localize('k_upgrade_ex'),
                 colour = G.C.CHIPS
         }
         end
     end
 }
 
+SMODS.Joker {
+	key = "cobalt",
+	config = { extra = { price = 5 } },
+	rarity = 2,
+	atlas = "Jokers",
+    blueprint_compat = true,
+	pos = { x = 0, y = 3 },
+	cost = 7,
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.price } }
+	end,
+	calculate = function(self, card, context)
+        if context.end_of_round and context.game_over == false and context.main_eval and not context.blueprint then
+            local chosen_joker = pseudorandom_element(G.jokers.cards, 'cobalt')
+            chosen_joker.ability.extra_value = chosen_joker.ability.extra_value + card.ability.extra.price
+            chosen_joker:set_cost()
+            return {
+                message = localize('k_val_up'),
+                colour = G.C.MONEY
+            }
+        end
+    end
+}
+
+SMODS.Joker {
+	key = "cyan",
+	config = { extra = { dollars = 6 } },
+	rarity = 2,
+	atlas = "Jokers",
+    blueprint_compat = true,
+	pos = { x = 1, y = 3 },
+	cost = 7,
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.dollars } }
+	end,
+    calculate = function(self, card, context)
+		if context.joker_main and G.GAME.hands[context.scoring_name].played <= 1 then
+			return {
+                dollars = card.ability.extra.dollars
+			}
+		end
+	end
+}
+
+SMODS.Joker {
+	key = "tea_green",
+	config = { extra = { xmult = 1 } },
+	rarity = 2,
+	atlas = "Jokers",
+    blueprint_compat = true,
+	pos = { x = 2, y = 3 },
+	cost = 7,
+	loc_vars = function(self, info_queue, card)
+        local card_index
+        if card.area and card.area == G.jokers then -- note: do not delete the doubling. the grouping is (card.area) and (card.area == G.jokers).
+            for i = 1, #G.jokers.cards do
+                if G.jokers.cards[i] == card then
+                    card_index = i
+                    return {
+                        vars = { card.ability.extra.xmult, math.max(1, #G.jokers.cards - (card_index or 1) + 1) }
+                    }
+                end
+            end
+        else
+            return {
+                vars = { card.ability.extra.xmult, 1 }
+            }           
+        end
+	end,
+    calculate = function(self, card, context)
+		if context.joker_main and card.area and card.area == G.jokers then
+            for i = 1, #G.jokers.cards do
+                if G.jokers.cards[i] == card then
+                    local card_index = i
+                    return {
+                        xmult = math.max(1, #G.jokers.cards - (card_index or 1) + 1)
+                    }
+                end
+            end
+		end
+	end
+}
+
+SMODS.Joker {
+	key = "plum",
+	config = { extra = { xmult = 5 } },
+	rarity = 2,
+	atlas = "Jokers",
+    blueprint_compat = true,
+	pos = { x = 3, y = 3 },
+	cost = 7,
+	loc_vars = function(self, info_queue, card)
+        local rank1 = (G.GAME.current_round.kls_pm_card_1 or {}).rank or 'Ace'
+        local rank2 = (G.GAME.current_round.kls_pm_card_2 or {}).rank or 'Ace'
+        local rank3 = (G.GAME.current_round.kls_pm_card_3 or {}).rank or 'Ace'
+		return { vars = { card.ability.extra.xmult, rank1, rank2, rank3 } }
+	end,
+	calculate = function(self, card, context)
+        if context.joker_main then
+            local ranks = {}
+            for k, v in pairs(context.scoring_hand) do
+                ranks[v:get_id()] = true
+            end
+            if ranks[G.GAME.current_round.kls_pm_card_1.id] and ranks[G.GAME.current_round.kls_pm_card_2.id] and ranks[G.GAME.current_round.kls_pm_card_3.id] then
+                return {
+                    xmult = card.ability.extra.xmult
+                }
+            end
+        end
+        if context.end_of_round and context.game_over == false and context.main_eval and not context.blueprint then
+            return {
+                message = localize('k_reset'),
+                colour = G.C.MULT
+            }
+        end
+    end
+}
+
+local function reset_kls_plum_rank()
+    G.GAME.current_round.kls_pm_card_1 = { rank = 'Ace' }
+    G.GAME.current_round.kls_pm_card_2 = { rank = '2' }
+    G.GAME.current_round.kls_pm_card_3 = { rank = '3' }
+    local valid_pm_cards = {}
+    for _, playing_card in ipairs(G.playing_cards) do
+        if not SMODS.has_no_rank(playing_card) then
+            valid_pm_cards[#valid_pm_cards + 1] = playing_card
+        end
+    end
+    local pm_card_1 = pseudorandom_element(valid_pm_cards, 'plum1_' .. G.GAME.round_resets.ante)
+    local pm_card_2 = pseudorandom_element(valid_pm_cards, 'plum2_' .. G.GAME.round_resets.ante)
+    local pm_card_3 = pseudorandom_element(valid_pm_cards, 'plum3_' .. G.GAME.round_resets.ante)
+    if pm_card_1 then
+        G.GAME.current_round.kls_pm_card_1.rank = pm_card_1.base.value
+        G.GAME.current_round.kls_pm_card_1.id = pm_card_1.base.id
+    end
+    if pm_card_2 then
+        G.GAME.current_round.kls_pm_card_2.rank = pm_card_2.base.value
+        G.GAME.current_round.kls_pm_card_2.id = pm_card_2.base.id
+    end
+    if pm_card_3 then
+        G.GAME.current_round.kls_pm_card_3.rank = pm_card_3.base.value
+        G.GAME.current_round.kls_pm_card_3.id = pm_card_3.base.id
+    end
+end
+
+SMODS.Joker {
+	key = "brass",
+	config = { extra = { mult = 0, mult_gain = 2 } },
+	rarity = 2,
+	atlas = "Jokers",
+    blueprint_compat = true,
+	pos = { x = 4, y = 3 },
+	cost = 7,
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.mult, card.ability.extra.mult_gain, card.ability.extra.mult + card.ability.extra.mult_gain * G.GAME.round } }
+	end,
+	calculate = function(self, card, context)
+		if context.joker_main then
+			return {
+                mult = card.ability.extra.mult + card.ability.extra.mult_gain * G.GAME.round
+			}
+		end
+	end
+}
+
+SMODS.Joker {
+	key = "fern",
+	config = { extra = { mult = 5, odds = 3 } },
+	rarity = 1,
+	atlas = "Jokers",
+    blueprint_compat = true,
+	pos = { x = 0, y = 4 },
+	cost = 7,
+	loc_vars = function(self, info_queue, card)
+        local num, den = SMODS.get_probability_vars(card, (G.GAME and G.GAME.probabilities.normal or 1), card.ability.extra.odds, "kls_fern_c")
+        return { vars = { card.ability.extra.mult, num, den, card.ability.extra.odds} }
+    end,
+    
+}
+
+SMODS.Joker {
+	key = "icely",
+	config = { extra = { xmult = 1, xmult_gain = 1.5} },
+	rarity = 4,
+	atlas = "Jokers",
+    blueprint_compat = true,
+	pos = { x = 3, y = 4 },
+    soul_pos = { x = 4, y = 4 },
+	cost = 20,
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.xmult, card.ability.extra.xmult_gain} }
+	end,
+	calculate = function(self, card, context)
+		if context.joker_main then
+			return {
+				xmult = card.ability.extra.xmult
+			}
+		end
+
+		if context.selling_card and context.card.ability.set == "Joker" and context.card ~= card and not context.blueprint and context.main_eval and context.card.config.center.original_mod == SMODS.Mods["KLS"] then
+			card.ability.extra.xmult = card.ability.extra.xmult + card.ability.extra.xmult_gain
+			return {
+				message = localize { type = "variable", key = "a_xmult", vars = { card.ability.extra.xmult } },
+				colour = G.C.MULT,
+				card = card
+			}
+		end
+	end
+}
+
+SMODS.Joker {
+	key = "daniyar",
+	config = { extra = { xmult = 1, xmult_gain = 0.75} },
+	rarity = 4,
+	atlas = "Jokers",
+    blueprint_compat = true,
+	pos = { x = 1, y = 4 },
+    soul_pos = { x = 2, y = 4 },
+	cost = 20,
+	loc_vars = function(self, info_queue, card)
+		return { vars = { card.ability.extra.xmult, card.ability.extra.xmult_gain } }
+	end,
+	calculate = function(self, card, context)
+		if context.joker_main then
+			return {
+				xmult = card.ability.extra.xmult
+			}
+		end
+
+        if context.after and not context.blueprint then
+            local wild = {}
+            for _, scored_card in ipairs(context.scoring_hand) do
+                if SMODS.has_enhancement(context.other_card, "m_wild") and not scored_card.debuff and not scored_card.daniyared then
+                    wild[#wild + 1] = scored_card
+                    scored_card.daniyared = true
+                end
+            end
+            SMODS.destroy_cards(wild)
+        end
+	end
+}
+
+function daniyar_check(card, suit)
+    if (card.base.suit == "Hearts" or card.base.suit == "Diamonds") and (suit == "Hearts" or suit == "Diamonds") then
+        return true
+    end
+    return false
+end
+
+local card_is_suit_ref = Card.is_suit
+function Card:is_suit(suit, bypass_debuff, flush_calc)
+    local ret = card_is_suit_ref(self, suit, bypass_debuff, flush_calc)
+    if not ret and not SMODS.has_no_suit(self) and next(SMODS.find_card("j_kls_daniyar")) then
+        return daniyar_check(self, suit)
+    end
+    return ret
+end
+
+
 function SMODS.current_mod.reset_game_globals(run_start)
     reset_kls_magenta_rank()
     reset_kls_lime_suit()
+    reset_kls_plum_rank()
 end
